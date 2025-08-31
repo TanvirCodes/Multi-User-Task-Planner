@@ -322,6 +322,7 @@ void UserManager::viewAllUserTasks() {
 
 /**
  * Will be implemented to filter users by various criteria
+ * Until please wait
  */
 void UserManager::filterUsers() {
     cout << "Filter logic coming soon (Sort by task, active/inactive etc.)\n";
