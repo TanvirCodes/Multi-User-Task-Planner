@@ -340,7 +340,7 @@ void UserManager::deactivateUser(int id) {
         return;
     }
 
-    // Toggle status and provide feedback
+    // Toggle status
     u->isActive = !u->isActive;
     if (u->isActive) {
         cout << "User " << u->username << " re-activated.\n";
