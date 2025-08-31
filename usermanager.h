@@ -26,6 +26,15 @@ private:
     int userIdCounter;      // For generating unique user IDs
     User* findById(int id); // Helper method to find user by ID for activate or deactivate easily
 
+     // User Portal
+    User* findByUsername(string username);
+    bool isUsernameUnique(string username);
+    bool isValidEmail(string email);
+    bool authenticateUser(string username, string password);
+    void userDashboard(User* currentUser);
+    void editProfile(User* currentUser);
+    void taskManagement(User* currentUser);
+
 public:
     UserManager();
     bool adminLogin();  // Authentication
@@ -42,6 +51,12 @@ public:
     // User status control
     void deactivateUser(int id);        // toggles active/inactive status
     bool isUserActiveById(int id);      // check if user exists and is active
+
+    // User Portal functions
+    void userPortalMenu();
+    bool userRegistration();
+    User* userLogin();
+    void deleteUserAccount(User* currentUser);
 };
 
 #endif

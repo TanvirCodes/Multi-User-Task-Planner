@@ -8,10 +8,10 @@ void mainMenu(UserManager &um) {
 
     // Main application loop
     do {
-        cout << "\n------- Task Planner Main Menu ---------\n";
-        cout << "1. Admin Dashboard\n";
-        cout << "2. User Portal (Coming Soon)\n";
-        cout << "3. Help Desk (Coming Soon)\n";
+        cout << "\n--------- Task Planner Main Menu ---------\n";
+        cout << "1. Admin Dashboard" << endl;
+        cout << "2. User Portal" << endl;
+        cout << "3. Help Desk (Coming Soon)" << endl;
         cout << "4. Exit\n";
         cout << "Enter your choice: ";
 
@@ -39,7 +39,10 @@ void mainMenu(UserManager &um) {
             }
 
             case 2: {
-                cout << "User Portal is under development.\n";
+                // User Portal System
+                system("cls");
+                cout << "Welcome to User Portal!\n";
+                um.userPortalMenu();
                 break;
             }
 

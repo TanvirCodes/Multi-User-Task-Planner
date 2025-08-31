@@ -1,9 +1,10 @@
 #include <iomanip>
 #include <limits>
+#include <algorithm>
+#include <cctype>
 #include "userManager.h"
 
 // Initialize UserManager with empty user list and sample data
-
 UserManager::UserManager() {
     head = nullptr;
     userIdCounter = 101;
@@ -28,6 +29,556 @@ bool UserManager::adminLogin() {
         return true;
     }
     return false;
+}
+
+/**
+ * Main User Portal Menu - Entry point for user operations
+ * Provides registration, login, and exit options
+ */
+void UserManager::userPortalMenu() {
+    int choice;
+
+    do {
+        cout << "\n--------- USER PORTAL ---------\n";
+        cout << "1. Registration\n";
+        cout << "2. Log In\n";
+        cout << "3. Exit\n";
+        cout << "Enter your choice: ";
+
+        // Input validation
+        if (!(cin >> choice)) {
+            cout << "Invalid input! Please enter a number.\n";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            continue;
+        }
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+        switch (choice) {
+            case 1: {
+                system("cls");
+                cout << "\n--------- USER REGISTRATION ---------\n";
+                if (userRegistration()) {
+                    cout << "Registration successful! You are now logged in.\n";
+                    cout << "Press Enter to continue...";
+                    cin.get();
+                    // Auto-login after successful registration
+                    User* newUser = findByUsername(""); // Will be set by registration
+                    // In real implementation, we'd store the username from registration. For now, we'll handle this in the registration function
+                }
+                break;
+            }
+
+            case 2: {
+                system("cls");
+                cout << "\n--------- USER LOGIN ---------\n";
+                User* loggedInUser = userLogin();
+                if (loggedInUser) {
+                    cout << "Login successful! Welcome " << loggedInUser->username << "!\n";
+                    cout << "Press Enter to continue...";
+                    cin.get();
+                    userDashboard(loggedInUser);
+                }
+                break;
+            }
+
+            case 3: {
+                cout << "\nExiting User Portal...\n";
+                break;
+            }
+
+            default: {
+                cout << "\nInvalid choice! Please enter 1-3.\n";
+                break;
+            }
+        }
+
+        if (choice != 3) {
+            cout << "\nPress Enter to return to User Portal menu...";
+            cin.get();
+        }
+
+    } while (choice != 3);
+}
+
+/**
+ * User Registration Process
+ * Collects user information with validation and creates new account
+ */
+bool UserManager::userRegistration() {
+    string username, password, email;
+
+    // Get username with uniqueness validation
+    do {
+        cout << "Enter username: ";
+        getline(cin, username);
+
+        if (username.empty()) {
+            cout << "Username cannot be empty! Please try again.\n";
+            continue;
+        }
+
+        if (!isUsernameUnique(username)) {
+            cout << "Username '" << username << "' is already taken! Please choose another.\n";
+            continue;
+        }
+        break;
+    } while (true);
+
+    // Get password
+    do {
+        cout << "Enter password: ";
+        getline(cin, password);
+
+        if (password.empty()) {
+            cout << "Password cannot be empty! Please try again.\n";
+            continue;
+        }
+
+        if (password.length() < 3) {
+            cout << "Password must be at least 3 characters long! Please try again.\n";
+            continue;
+        }
+        break;
+    } while (true);
+
+    // Get email with validation
+    do {
+        cout << "Enter email: ";
+        getline(cin, email);
+
+        if (email.empty()) {
+            cout << "Email cannot be empty! Please try again.\n";
+            continue;
+        }
+
+        if (!isValidEmail(email)) {
+            cout << "Invalid email format! Please enter a valid email.\n";
+            continue;
+        }
+        break;
+    } while (true);
+
+    // Create new user account
+    addUser(username, email, password);
+    cout << "\nAccount created successfully!\n";
+    cout << "Username: " << username << "\n";
+    cout << "Email: " << email << "\n";
+
+    // Auto-login after registration
+    User* newUser = findByUsername(username);
+    if (newUser) {
+        userDashboard(newUser);
+        return true;
+    }
+
+    return false;
+}
+
+/**
+ * User Login Process with 3-attempt limit
+ * Authenticates user and handles failed login attempts
+ */
+User* UserManager::userLogin() {
+    string username, password;
+    int attempts = 0;
+    const int MAX_ATTEMPTS = 3;
+
+    cout << "Enter username: ";
+    getline(cin, username);
+
+    if (username.empty()) {
+        cout << "Username cannot be empty!\n";
+        return nullptr;
+    }
+
+    // Check if user exists
+    User* user = findByUsername(username);
+    if (!user) {
+        cout << "User '" << username << "' not found!\n";
+        return nullptr;
+    }
+
+    // Check if user is active
+    if (!user->isActive) {
+        cout << "Your account has been deactivated. Please contact administrator.\n";
+        return nullptr;
+    }
+
+    // Password verification with attempt limit
+    while (attempts < MAX_ATTEMPTS) {
+        cout << "Enter password: ";
+        getline(cin, password);
+
+        if (user->password == password) {
+            return user; // Successful login
+        }
+
+        attempts++;
+        cout << "Incorrect password! ";
+
+        if (attempts < MAX_ATTEMPTS) {
+            cout << "You have " << (MAX_ATTEMPTS - attempts) << " attempt(s) remaining.\n";
+        }
+    }
+
+    // Deactivate user after 3 failed attempts
+    cout << "\nToo many failed login attempts. Your account has been deactivated for security.\n";
+    cout << "Please contact administrator to reactivate your account.\n";
+    user->isActive = false;
+
+    return nullptr;
+}
+
+/**
+ * User Dashboard - Main menu after successful login
+ * Provides access to profile editing and task management
+ */
+void UserManager::userDashboard(User* currentUser) {
+    int choice;
+
+    do {
+        cout << "\n--------- USER DASHBOARD ---------\n";
+        cout << "Welcome, " << currentUser->username << "!\n";
+        cout << "Account Status: " << (currentUser->isActive ? "Active" : "Deactivated") << "\n";
+        cout << "Email: " << currentUser->email << "\n";
+        cout << "User ID: " << currentUser->id << "\n";
+        cout << "\n1. Edit Profile\n";
+        cout << "2. Task Management\n";
+        cout << "3. Logout\n";
+        cout << "Enter your choice: ";
+
+        if (!(cin >> choice)) {
+            cout << "Invalid input! Please enter a number.\n";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            continue;
+        }
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+        switch (choice) {
+            case 1: {
+                system("cls");
+                editProfile(currentUser);
+                break;
+            }
+
+            case 2: {
+                system("cls");
+                taskManagement(currentUser);
+                break;
+            }
+
+            case 3: {
+                cout << "\nLogging out... Goodbye " << currentUser->username << "!\n";
+                break;
+            }
+
+            default: {
+                cout << "\nInvalid choice! Please enter 1-3.\n";
+                break;
+            }
+        }
+
+        if (choice != 3) {
+            cout << "\nPress Enter to continue...";
+            cin.get();
+        }
+
+    } while (choice != 3);
+}
+
+/**
+ * Edit Profile Menu - Allows users to modify their account information
+ * Provides username, password, email editing and account deletion
+ */
+void UserManager::editProfile(User* currentUser) {
+    int choice;
+
+    do {
+        cout << "\n--------- EDIT PROFILE ---------\n";
+        cout << "Current Information:\n";
+        cout << "Username: " << currentUser->username << "\n";
+        cout << "Email: " << currentUser->email << "\n";
+        cout << "User ID: " << currentUser->id << "\n";
+        cout << "\n1. Edit Username\n";
+        cout << "2. Change Password\n";
+        cout << "3. Change Email\n";
+        cout << "4. Delete Account\n";
+        cout << "5. Back to Dashboard\n";
+        cout << "Enter your choice: ";
+
+        if (!(cin >> choice)) {
+            cout << "Invalid input! Please enter a number.\n";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            continue;
+        }
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+        switch (choice) {
+            case 1: {
+                // Edit Username
+                string newUsername;
+                cout << "\n--- Edit Username ---\n";
+                cout << "Current username: " << currentUser->username << "\n";
+
+                do {
+                    cout << "Enter new username: ";
+                    getline(cin, newUsername);
+
+                    if (newUsername.empty()) {
+                        cout << "Username cannot be empty!\n";
+                        continue;
+                    }
+
+                    if (newUsername == currentUser->username) {
+                        cout << "New username is same as current username!\n";
+                        break;
+                    }
+
+                    if (!isUsernameUnique(newUsername)) {
+                        cout << "Username '" << newUsername << "' is already taken!\n";
+                        continue;
+                    }
+
+                    // Update username
+                    currentUser->username = newUsername;
+                    cout << "Username updated successfully to: " << newUsername << "\n";
+                    break;
+
+                } while (true);
+                break;
+            }
+
+            case 2: {
+                // Change Password
+                string currentPass, newPass, confirmPass;
+                cout << "\n--- Change Password ---\n";
+
+                cout << "Enter current password: ";
+                getline(cin, currentPass);
+
+                if (currentUser->password != currentPass) {
+                    cout << "Current password is incorrect!\n";
+                    break;
+                }
+
+                do {
+                    cout << "Enter new password: ";
+                    getline(cin, newPass);
+
+                    if (newPass.empty() || newPass.length() < 3) {
+                        cout << "Password must be at least 3 characters long!\n";
+                        continue;
+                    }
+
+                    cout << "Confirm new password: ";
+                    getline(cin, confirmPass);
+
+                    if (newPass != confirmPass) {
+                        cout << "Passwords do not match! Please try again.\n";
+                        continue;
+                    }
+
+                    // Update password
+                    currentUser->password = newPass;
+                    cout << "Password changed successfully!\n";
+                    break;
+
+                } while (true);
+                break;
+            }
+
+            case 3: {
+                // Change Email
+                string newEmail;
+                cout << "\n--- Change Email ---\n";
+                cout << "Current email: " << currentUser->email << "\n";
+
+                do {
+                    cout << "Enter new email: ";
+                    getline(cin, newEmail);
+
+                    if (newEmail.empty()) {
+                        cout << "Email cannot be empty!\n";
+                        continue;
+                    }
+
+                    if (newEmail == currentUser->email) {
+                        cout << "New email is same as current email!\n";
+                        break;
+                    }
+
+                    if (!isValidEmail(newEmail)) {
+                        cout << "Invalid email format!\n";
+                        continue;
+                    }
+
+                    // Update email
+                    currentUser->email = newEmail;
+                    cout << "Email updated successfully to: " << newEmail << "\n";
+                    break;
+
+                } while (true);
+                break;
+            }
+
+            case 4: {
+                // Delete Account
+                deleteUserAccount(currentUser);
+                return; // Exit if account is deleted
+            }
+
+            case 5: {
+                cout << "\nReturning to dashboard...\n";
+                break;
+            }
+
+            default: {
+                cout << "\nInvalid choice! Please enter 1-5.\n";
+                break;
+            }
+        }
+
+        if (choice != 5) {
+            cout << "\nPress Enter to continue...";
+            cin.get();
+        }
+
+    } while (choice != 5);
+}
+
+/**
+ * Task Management Menu - Placeholder for future task operations
+ * Will handle user's personal task management
+ */
+void UserManager::taskManagement(User* currentUser) {
+    cout << "\n--------- TASK MANAGEMENT ---------\n";
+    cout << "User: " << currentUser->username << "\n";
+    cout << "\nTask Management features coming soon!\n";
+    cout << "This will include:\n";
+    cout << "- Add new tasks\n";
+    cout << "- View your tasks\n";
+    cout << "- Edit task details\n";
+    cout << "- Mark tasks as completed\n";
+    cout << "- Delete tasks\n";
+    cout << "\nPress Enter to return to dashboard...";
+    cin.get();
+}
+
+/**
+ * Delete User Account with confirmation
+ * Permanently removes user from the system
+ */
+void UserManager::deleteUserAccount(User* currentUser) {
+    string confirmation;
+
+    cout << "\n--------- DELETE ACCOUNT ---------\n";
+    cout << "WARNING: This action cannot be undone!\n";
+    cout << "All your data including tasks will be permanently deleted.\n";
+    cout << "\nAccount to delete:\n";
+    cout << "Username: " << currentUser->username << "\n";
+    cout << "Email: " << currentUser->email << "\n";
+    cout << "User ID: " << currentUser->id << "\n";
+
+    cout << "\nType 'DELETE' to confirm account deletion: ";
+    getline(cin, confirmation);
+
+    if (confirmation != "DELETE") {
+        cout << "Account deletion cancelled.\n";
+        return;
+    }
+
+    cout << "\nEnter your password to confirm: ";
+    string password;
+    getline(cin, password);
+
+    if (currentUser->password != password) {
+        cout << "Incorrect password! Account deletion cancelled.\n";
+        return;
+    }
+
+    // Delete user from linked list
+    if (head == currentUser) {
+        // Deleting first user
+        head = currentUser->next;
+    } else {
+        // Find previous user
+        User* prev = head;
+        while (prev && prev->next != currentUser) {
+            prev = prev->next;
+        }
+        if (prev) {
+            prev->next = currentUser->next;
+        }
+    }
+
+    // Delete all user's tasks
+    Task* task = currentUser->taskHead;
+    while (task) {
+        Task* nextTask = task->next;
+        delete task;
+        task = nextTask;
+    }
+
+    cout << "\nAccount '" << currentUser->username << "' has been permanently deleted.\n";
+    cout << "Thank you for using our system. Goodbye!\n";
+
+    delete currentUser;
+
+    cout << "Press Enter to return to User Portal...";
+    cin.get();
+}
+
+/**
+ * Find user by username
+ */
+User* UserManager::findByUsername(string username) {
+    User* temp = head;
+    while (temp) {
+        if (temp->username == username) {
+            return temp;
+        }
+        temp = temp->next;
+    }
+    return nullptr;
+}
+
+/**
+ * Check if username is unique in the system
+ */
+bool UserManager::isUsernameUnique(string username) {
+    return (findByUsername(username) == nullptr);
+}
+
+/**
+ * Basic email validation
+ * Checks for @ symbol and basic format
+ */
+bool UserManager::isValidEmail(string email) {
+    if (email.length() < 5) return false;
+
+    size_t atPos = email.find('@');
+    if (atPos == string::npos || atPos == 0 || atPos == email.length() - 1) {
+        return false;
+    }
+
+    size_t dotPos = email.find('.', atPos);
+    if (dotPos == string::npos || dotPos == atPos + 1 || dotPos == email.length() - 1) {
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * Authenticate user credentials
+ * Returns true if username and password match
+ */
+bool UserManager::authenticateUser(string username, string password) {
+    User* user = findByUsername(username);
+    return (user && user->password == password && user->isActive);
 }
 
 /**
@@ -340,7 +891,7 @@ void UserManager::deactivateUser(int id) {
         return;
     }
 
-    // Toggle status
+    // Toggle status and provide feedback
     u->isActive = !u->isActive;
     if (u->isActive) {
         cout << "User " << u->username << " re-activated.\n";
