@@ -12,6 +12,7 @@ UserManager::UserManager() {
     addUser("tanvir", "tanvir@gmail.com", "1234");
     addUser("sadik",  "sadik@gmail.com",  "abcd");
     addUser("Himel",  "Himel@gmail.com",  "abcd");
+    addUser("Anam",  "Anamul@gmail.com",  "ab1234");
 }
 
 // Admin login authentication with hardcoded credentials
