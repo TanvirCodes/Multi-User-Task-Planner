@@ -1,0 +1,14 @@
+# depslib dependency file v1.0
+1756600892 source:c:\users\hp\desktop\cse225 project\task_planner\main.cpp
+	<iostream>
+	<limits>
+	"userManager.h"
+
+1756598681 c:\users\hp\desktop\cse225 project\task_planner\usermanager.h
+	<iostream>
+
+1756598681 source:c:\users\hp\desktop\cse225 project\task_planner\usermanager.cpp
+	"userManager.h"
+	<iomanip>
+	<limits>
+
