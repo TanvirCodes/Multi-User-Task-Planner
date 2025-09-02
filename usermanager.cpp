@@ -1,7 +1,5 @@
 #include <iomanip>
 #include <limits>
-#include <algorithm>
-#include <cctype>
 #include "userManager.h"
 
 // Initialize UserManager with empty user list and sample data
