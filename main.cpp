@@ -6,80 +6,70 @@ using namespace std;
 void mainMenu(UserManager &um) {
     int choice;
 
-    // Main application loop
+    // Main Application
     do {
-        cout << "\n--------- Task Planner Main Menu ---------\n";
+        cout << "--------- Task Planner Main Menu ---------" << endl;
         cout << "1. Admin Dashboard" << endl;
         cout << "2. User Portal" << endl;
         cout << "3. Help Desk" << endl;
-        cout << "4. Exit\n";
+        cout << "4. Exit" << endl;
         cout << "Enter your choice: ";
 
         if (!(cin >> choice)) {
-            cout << "Invalid input! Please enter a number.\n";
-            cin.clear(); // Clear error flag
+            cout << "Invalid input! Please enter a number." << endl;
             cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Ignore invalid input
             continue;
         }
 
         cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear input buffer
 
-        // Process user's menu selection
+        // Users menu selection
         switch (choice) {
             case 1: {
-                // Take Admin authentication before granting access
                 if (um.adminLogin()) {
-                    // Display system statistics and enter Admin operations menu
-                    um.showAdminDashboard();
-                    um.adminDashboardMenu();
+                    um.showAdminDashboard(); // Display system statistics
+                    um.adminDashboardMenu(); // Display admin operations menu
                 } else {
-                    cout << "Invalid Admin credentials. Access denied.\n";
+                    cout << "Invalid Admin credentials. Access denied." << endl;
                 }
                 break;
             }
 
             case 2: {
-                // User Portal System
                 system("cls");
-                cout << "Welcome to User Portal!\n";
-                um.userPortalMenu();
+                cout << "Welcome to User Portal!" << endl;
+                um.userPortalMenu(); // Display User Portal System
                 break;
             }
 
             case 3: {
-                cout << "Help Desk is under development.\n";
+                cout << "Help Desk is under development." << endl; // No features here
                 break;
             }
 
             case 4: {
-                cout << "Exiting program...\n";
+                cout << "Exiting program.........." << endl;
                 break;
             }
 
             default: {
-                cout << "Invalid choice! Please enter a number between 1-4.\n";
+                cout << "Invalid choice." << endl;
                 break;
             }
         }
 
         if (choice != 4) {
-            cout << "Press Enter to continue...";
+            cout << "Press Enter to continue......";
             cin.get();
         }
 
     } while (choice != 4);
 }
 
-/**
- * Main Function - Entry point of the Multi-User Task Planner application
- * Initializes the user management system and starts the main menu interface
- */
+// Main Function Of Multi-User Task Planner application
 int main() {
-    // Initialize UserManager object
-    UserManager userManager;
-
-    // Start the main application interface
-    mainMenu(userManager);
+    UserManager userManager; // Initialize UserManager object
+    mainMenu(userManager); // Start the main application interface
 
     return 0;
 }
