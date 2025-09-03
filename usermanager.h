@@ -24,6 +24,7 @@ class UserManager {
 private:
     User* head;             // First user in linked list
     int userIdCounter;      // For generating unique user IDs
+    int taskIdCounter;      // For generating unique task IDs
     User* findById(int id); // Helper method to find user by ID for activate or deactivate easily
 
      // User Portal
@@ -34,6 +35,11 @@ private:
     void userDashboard(User* currentUser);
     void editProfile(User* currentUser);
     void taskManagement(User* currentUser);
+
+    // Task management helper functions
+    Task* findTaskById(User* user, int taskId);
+    int getNextTaskId();
+    bool isValidDate(string date);
 
 public:
     UserManager();
@@ -57,6 +63,15 @@ public:
     bool userRegistration();
     User* userLogin();
     void deleteUserAccount(User* currentUser);
+
+    // Task management functions
+    void addTask(User* currentUser);
+    void viewUserTasks(User* currentUser);
+    void editTask(User* currentUser);
+    void markTaskCompleted(User* currentUser);
+    void deleteTask(User* currentUser);
+    void viewTaskDetails(User* currentUser);
+
 };
 
 #endif

@@ -11,7 +11,7 @@ void mainMenu(UserManager &um) {
         cout << "\n--------- Task Planner Main Menu ---------\n";
         cout << "1. Admin Dashboard" << endl;
         cout << "2. User Portal" << endl;
-        cout << "3. Help Desk (Coming Soon)" << endl;
+        cout << "3. Help Desk" << endl;
         cout << "4. Exit\n";
         cout << "Enter your choice: ";
 
@@ -51,7 +51,7 @@ void mainMenu(UserManager &um) {
                 break;
             }
 
-            case 4: {
+            case 3: {
                 cout << "Exiting program...\n";
                 break;
             }

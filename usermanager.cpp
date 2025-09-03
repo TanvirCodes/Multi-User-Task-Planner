@@ -6,6 +6,8 @@
 UserManager::UserManager() {
     head = nullptr;
     userIdCounter = 101;
+    taskIdCounter = 1001;  // Initialize task ID counter
+
 
     // Add sample users for testing
     addUser("tanvir", "tanvir@gmail.com", "1234");
@@ -452,17 +454,527 @@ void UserManager::editProfile(User* currentUser) {
  * Will handle user's personal task management
  */
 void UserManager::taskManagement(User* currentUser) {
-    cout << "\n--------- TASK MANAGEMENT ---------\n";
-    cout << "User: " << currentUser->username << "\n";
-    cout << "\nTask Management features coming soon!\n";
-    cout << "This will include:\n";
-    cout << "- Add new tasks\n";
-    cout << "- View your tasks\n";
-    cout << "- Edit task details\n";
-    cout << "- Mark tasks as completed\n";
-    cout << "- Delete tasks\n";
-    cout << "\nPress Enter to return to dashboard...";
-    cin.get();
+    int choice;
+
+    do {
+        cout << "\n--------- TASK MANAGEMENT ---------\n";
+        cout << "User: " << currentUser->username << "\n";
+
+        // Count tasks for display
+        int totalTasks = 0, completedTasks = 0, ongoingTasks = 0;
+        Task* temp = currentUser->taskHead;
+        while (temp) {
+            totalTasks++;
+            if (temp->status == "Completed") {
+                completedTasks++;
+            } else {
+                ongoingTasks++;
+            }
+            temp = temp->next;
+        }
+
+        cout << "Total Tasks: " << totalTasks;
+        cout << " | Completed: " << completedTasks;
+        cout << " | Ongoing: " << ongoingTasks << "\n";
+
+        cout << "\n1. Add New Task\n";
+        cout << "2. View All Tasks\n";
+        cout << "3. Edit Task\n";
+        cout << "4. Mark Task as Completed\n";
+        cout << "5. Delete Task\n";
+        cout << "6. View Task Details\n";
+        cout << "7. Back to Dashboard\n";
+        cout << "Enter your choice: ";
+
+        if (!(cin >> choice)) {
+            cout << "Invalid input! Please enter a number.\n";
+            cin.clear();
+            cin.ignore(1000, '\n');
+            continue;
+        }
+        cin.ignore();
+
+        switch (choice) {
+            case 1: {
+                addTask(currentUser);
+                break;
+            }
+
+            case 2: {
+                viewUserTasks(currentUser);
+                break;
+            }
+
+            case 3: {
+                editTask(currentUser);
+                break;
+            }
+
+            case 4: {
+                markTaskCompleted(currentUser);
+                break;
+            }
+
+            case 5: {
+                deleteTask(currentUser);
+                break;
+            }
+
+            case 6: {
+                viewTaskDetails(currentUser);
+                break;
+            }
+
+            case 7: {
+                cout << "\nReturning to dashboard...\n";
+                break;
+            }
+
+            default: {
+                cout << "\nInvalid choice! Please enter 1-7.\n";
+                break;
+            }
+        }
+
+        if (choice != 7) {
+            cout << "\nPress Enter to continue...";
+            cin.get();
+        }
+
+    } while (choice != 7);
+}
+
+// Add new task for user
+void UserManager::addTask(User* currentUser) {
+    cout << "\n--- Add New Task ---\n";
+
+    string title, dueDate;
+
+    // Get task title
+    do {
+        cout << "Enter task title: ";
+        getline(cin, title);
+
+        if (title.empty()) {
+            cout << "Task title cannot be empty! Please try again.\n";
+            continue;
+        }
+
+        if (title.length() > 100) {
+            cout << "Task title too long! Please keep it under 100 characters.\n";
+            continue;
+        }
+        break;
+    } while (true);
+
+    // Get due date
+    do {
+        cout << "Enter due date (DD/MM/YYYY): ";
+        getline(cin, dueDate);
+
+        if (dueDate.empty()) {
+            cout << "Due date cannot be empty! Please try again.\n";
+            continue;
+        }
+
+        if (!isValidDate(dueDate)) {
+            cout << "Invalid date format! Please use DD/MM/YYYY format.\n";
+            continue;
+        }
+        break;
+    } while (true);
+
+    // Create new task
+    Task* newTask = new Task;
+    newTask->taskId = getNextTaskId();
+    newTask->title = title;
+    newTask->dueDate = dueDate;
+    newTask->status = "Ongoing";
+    newTask->next = nullptr;
+
+    // Add task to user's task list
+    if (currentUser->taskHead == nullptr) {
+        currentUser->taskHead = newTask;
+    } else {
+        Task* temp = currentUser->taskHead;
+        while (temp->next != nullptr) {
+            temp = temp->next;
+        }
+        temp->next = newTask;
+    }
+
+    cout << "\nTask added successfully!\n";
+    cout << "Task ID: " << newTask->taskId << "\n";
+    cout << "Title: " << newTask->title << "\n";
+    cout << "Due Date: " << newTask->dueDate << "\n";
+    cout << "Status: " << newTask->status << "\n";
+}
+
+// View all tasks for user
+void UserManager::viewUserTasks(User* currentUser) {
+    cout << "\n--- Your Tasks ---\n";
+
+    if (currentUser->taskHead == nullptr) {
+        cout << "You have no tasks yet. Add some tasks to get started!\n";
+        return;
+    }
+
+    cout << left << setw(8) << "ID";
+    cout << setw(25) << "Title";
+    cout << setw(12) << "Due Date";
+    cout << setw(12) << "Status" << "\n";
+    cout << string(57, '-') << "\n";
+
+    Task* temp = currentUser->taskHead;
+    while (temp != nullptr) {
+        cout << left << setw(8) << temp->taskId;
+
+        // Truncate long titles
+        string displayTitle = temp->title;
+        if (displayTitle.length() > 24) {
+            displayTitle = displayTitle.substr(0, 21) + "...";
+        }
+        cout << setw(25) << displayTitle;
+
+        cout << setw(12) << temp->dueDate;
+        cout << setw(12) << temp->status << "\n";
+
+        temp = temp->next;
+    }
+}
+
+// Edit existing task
+void UserManager::editTask(User* currentUser) {
+    cout << "\n--- Edit Task ---\n";
+
+    if (currentUser->taskHead == nullptr) {
+        cout << "You have no tasks to edit.\n";
+        return;
+    }
+
+    // First show all tasks
+    viewUserTasks(currentUser);
+
+    int taskId;
+    cout << "\nEnter Task ID to edit: ";
+    if (!(cin >> taskId)) {
+        cout << "Invalid Task ID!\n";
+        cin.clear();
+        cin.ignore(1000, '\n');
+        return;
+    }
+    cin.ignore();
+
+    Task* task = findTaskById(currentUser, taskId);
+    if (task == nullptr) {
+        cout << "Task with ID " << taskId << " not found!\n";
+        return;
+    }
+
+    cout << "\nCurrent Task Details:\n";
+    cout << "ID: " << task->taskId << "\n";
+    cout << "Title: " << task->title << "\n";
+    cout << "Due Date: " << task->dueDate << "\n";
+    cout << "Status: " << task->status << "\n";
+
+    int choice;
+    cout << "\nWhat do you want to edit?\n";
+    cout << "1. Title\n";
+    cout << "2. Due Date\n";
+    cout << "3. Status\n";
+    cout << "4. Cancel\n";
+    cout << "Enter your choice: ";
+
+    if (!(cin >> choice)) {
+        cout << "Invalid choice!\n";
+        cin.clear();
+        cin.ignore(1000, '\n');
+        return;
+    }
+    cin.ignore();
+
+    switch (choice) {
+        case 1: {
+            string newTitle;
+            cout << "Enter new title: ";
+            getline(cin, newTitle);
+
+            if (!newTitle.empty() && newTitle.length() <= 100) {
+                task->title = newTitle;
+                cout << "Title updated successfully!\n";
+            } else {
+                cout << "Invalid title! Title cannot be empty or too long.\n";
+            }
+            break;
+        }
+
+        case 2: {
+            string newDueDate;
+            cout << "Enter new due date (DD/MM/YYYY): ";
+            getline(cin, newDueDate);
+
+            if (isValidDate(newDueDate)) {
+                task->dueDate = newDueDate;
+                cout << "Due date updated successfully!\n";
+            } else {
+                cout << "Invalid date format!\n";
+            }
+            break;
+        }
+
+        case 3: {
+            int statusChoice;
+            cout << "Select new status:\n";
+            cout << "1. Ongoing\n";
+            cout << "2. Completed\n";
+            cout << "Enter choice: ";
+
+            if (cin >> statusChoice) {
+                if (statusChoice == 1) {
+                    task->status = "Ongoing";
+                    cout << "Status updated to Ongoing!\n";
+                } else if (statusChoice == 2) {
+                    task->status = "Completed";
+                    cout << "Status updated to Completed!\n";
+                } else {
+                    cout << "Invalid status choice!\n";
+                }
+            } else {
+                cout << "Invalid input!\n";
+            }
+            cin.ignore();
+            break;
+        }
+
+        case 4: {
+            cout << "Edit cancelled.\n";
+            break;
+        }
+
+        default: {
+            cout << "Invalid choice!\n";
+            break;
+        }
+    }
+}
+
+// Mark task as completed
+void UserManager::markTaskCompleted(User* currentUser) {
+    cout << "\n--- Mark Task as Completed ---\n";
+
+    if (currentUser->taskHead == nullptr) {
+        cout << "You have no tasks to mark as completed.\n";
+        return;
+    }
+
+    // Show only ongoing tasks
+    cout << "Ongoing Tasks:\n";
+    cout << left << setw(8) << "ID";
+    cout << setw(25) << "Title";
+    cout << setw(12) << "Due Date" << "\n";
+    cout << string(45, '-') << "\n";
+
+    bool hasOngoingTasks = false;
+    Task* temp = currentUser->taskHead;
+    while (temp != nullptr) {
+        if (temp->status == "Ongoing") {
+            hasOngoingTasks = true;
+            cout << left << setw(8) << temp->taskId;
+
+            string displayTitle = temp->title;
+            if (displayTitle.length() > 24) {
+                displayTitle = displayTitle.substr(0, 21) + "...";
+            }
+            cout << setw(25) << displayTitle;
+            cout << setw(12) << temp->dueDate << "\n";
+        }
+        temp = temp->next;
+    }
+
+    if (!hasOngoingTasks) {
+        cout << "No ongoing tasks found! All tasks are already completed.\n";
+        return;
+    }
+
+    int taskId;
+    cout << "\nEnter Task ID to mark as completed: ";
+    if (!(cin >> taskId)) {
+        cout << "Invalid Task ID!\n";
+        cin.clear();
+        cin.ignore(1000, '\n');
+        return;
+    }
+    cin.ignore();
+
+    Task* task = findTaskById(currentUser, taskId);
+    if (task == nullptr) {
+        cout << "Task with ID " << taskId << " not found!\n";
+        return;
+    }
+
+    if (task->status == "Completed") {
+        cout << "Task is already completed!\n";
+        return;
+    }
+
+    task->status = "Completed";
+    cout << "\nTask marked as completed successfully!\n";
+    cout << "Task: " << task->title << "\n";
+    cout << "Congratulations on completing your task!\n";
+}
+
+// Delete task
+void UserManager::deleteTask(User* currentUser) {
+    cout << "\n--- Delete Task ---\n";
+
+    if (currentUser->taskHead == nullptr) {
+        cout << "You have no tasks to delete.\n";
+        return;
+    }
+
+    viewUserTasks(currentUser);
+
+    int taskId;
+    cout << "\nEnter Task ID to delete: ";
+    if (!(cin >> taskId)) {
+        cout << "Invalid Task ID!\n";
+        cin.clear();
+        cin.ignore(1000, '\n');
+        return;
+    }
+    cin.ignore();
+
+    Task* task = findTaskById(currentUser, taskId);
+    if (task == nullptr) {
+        cout << "Task with ID " << taskId << " not found!\n";
+        return;
+    }
+
+    cout << "\nTask to delete:\n";
+    cout << "ID: " << task->taskId << "\n";
+    cout << "Title: " << task->title << "\n";
+    cout << "Due Date: " << task->dueDate << "\n";
+    cout << "Status: " << task->status << "\n";
+
+    string confirmation;
+    cout << "\nType 'DELETE' to confirm deletion: ";
+    getline(cin, confirmation);
+
+    if (confirmation != "DELETE") {
+        cout << "Task deletion cancelled.\n";
+        return;
+    }
+
+    // Delete from linked list
+    if (currentUser->taskHead == task) {
+        // Deleting first task
+        currentUser->taskHead = task->next;
+    } else {
+        // Find previous task
+        Task* prev = currentUser->taskHead;
+        while (prev != nullptr && prev->next != task) {
+            prev = prev->next;
+        }
+        if (prev != nullptr) {
+            prev->next = task->next;
+        }
+    }
+
+    delete task;
+    cout << "\nTask deleted successfully!\n";
+}
+
+// NEW: View detailed task information
+void UserManager::viewTaskDetails(User* currentUser) {
+    cout << "\n--- Task Details ---\n";
+
+    if (currentUser->taskHead == nullptr) {
+        cout << "You have no tasks.\n";
+        return;
+    }
+
+    viewUserTasks(currentUser);
+
+    int taskId;
+    cout << "\nEnter Task ID to view details: ";
+    if (!(cin >> taskId)) {
+        cout << "Invalid Task ID!\n";
+        cin.clear();
+        cin.ignore(1000, '\n');
+        return;
+    }
+    cin.ignore();
+
+    Task* task = findTaskById(currentUser, taskId);
+    if (task == nullptr) {
+        cout << "Task with ID " << taskId << " not found!\n";
+        return;
+    }
+
+    cout << "\n---------- TASK DETAILS ----------\n";
+    cout << "Task ID: " << task->taskId << "\n";
+    cout << "Title: " << task->title << "\n";
+    cout << "Due Date: " << task->dueDate << "\n";
+    cout << "Status: " << task->status << "\n";
+    cout << "--------------------------------\n";
+
+    if (task->status == "Completed") {
+        cout << "✓ This task has been completed!\n";
+    } else {
+        cout << "⚠ This task is still ongoing.\n";
+    }
+}
+
+// To find task by ID
+Task* UserManager::findTaskById(User* user, int taskId) {
+    Task* temp = user->taskHead;
+    while (temp != nullptr) {
+        if (temp->taskId == taskId) {
+            return temp;
+        }
+        temp = temp->next;
+    }
+    return nullptr;
+}
+
+// Get next task ID
+int UserManager::getNextTaskId() {
+    return taskIdCounter++;
+}
+
+// Basic date validation
+bool UserManager::isValidDate(string date) {
+    // Basic validation for DD/MM/YYYY format
+    if (date.length() != 10) {
+        return false;
+    }
+
+    if (date[2] != '/' || date[5] != '/') {
+        return false;
+    }
+
+    // Check if day, month, year parts are digits
+    for (int i = 0; i < 10; i++) {
+        if (i == 2 || i == 5) continue; // Skip '/' characters
+        if (date[i] < '0' || date[i] > '9') {
+            return false;
+        }
+    }
+
+    // Basic range validation
+    string dayStr = date.substr(0, 2);
+    string monthStr = date.substr(3, 2);
+    string yearStr = date.substr(6, 4);
+
+    int day = stoi(dayStr);
+    int month = stoi(monthStr);
+    int year = stoi(yearStr);
+
+    if (day < 1 || day > 31) return false;
+    if (month < 1 || month > 12) return false;
+    if (year < 2024 || year > 2030) return false; // Reasonable year range
+
+    return true;
 }
 
 /**
@@ -673,7 +1185,7 @@ void UserManager::adminDashboardMenu() {
                 cout << "\n--- Search Users ---\n";
                 string keyword;
                 cout << "Enter keyword (id/email/username): ";
-                getline(cin, keyword);
+                getline(cin, keyword); //avoid input buffer
 
                 if (!keyword.empty()) {
                     cout << "Searching for: " << keyword << "\n";
