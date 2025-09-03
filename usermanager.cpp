@@ -1383,13 +1383,107 @@ void UserManager::viewAllUserTasks() {
     }
 }
 
-/**
- * Will be implemented to filter users by various criteria
- * Until please wait
- */
+// Filter users
 void UserManager::filterUsers() {
-    cout << "Filter logic coming soon (Sort by task, active/inactive etc.)\n";
+    int choice;
+    do {
+        cout << "\n--------- FILTER USERS ---------\n";
+        cout << "1. Active Users\n";
+        cout << "2. Inactive Users\n";
+        cout << "3. Users with Tasks\n";
+        cout << "4. Users without Tasks\n";
+        cout << "5. Back to Admin Menu\n";
+        cout << "Enter your choice: ";
+
+        if (!(cin >> choice)) {
+            cout << "Invalid input! Please enter a number.\n";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            continue;
+        }
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+        bool found = false;
+        User* temp = head;
+
+        switch (choice) {
+            case 1: {
+                cout << "\n--- Active Users ---\n";
+                while (temp) {
+                    if (temp->isActive) {
+                        cout << "ID: " << temp->id
+                             << ", Username: " << temp->username
+                             << ", Email: " << temp->email << "\n";
+                        found = true;
+                    }
+                    temp = temp->next;
+                }
+                if (!found) cout << "No active users found.\n";
+                break;
+            }
+
+            case 2: {
+                cout << "\n--- Inactive Users ---\n";
+                while (temp) {
+                    if (!temp->isActive) {
+                        cout << "ID: " << temp->id
+                             << ", Username: " << temp->username
+                             << ", Email: " << temp->email << "\n";
+                        found = true;
+                    }
+                    temp = temp->next;
+                }
+                if (!found) cout << "No inactive users found.\n";
+                break;
+            }
+
+            case 3: {
+                cout << "\n--- Users with Tasks ---\n";
+                while (temp) {
+                    if (temp->taskHead != nullptr) {
+                        cout << "ID: " << temp->id
+                             << ", Username: " << temp->username
+                             << ", Email: " << temp->email << "\n";
+                        found = true;
+                    }
+                    temp = temp->next;
+                }
+                if (!found) cout << "No users with tasks found.\n";
+                break;
+            }
+
+            case 4: {
+                cout << "\n--- Users without Tasks ---\n";
+                while (temp) {
+                    if (temp->taskHead == nullptr) {
+                        cout << "ID: " << temp->id
+                             << ", Username: " << temp->username
+                             << ", Email: " << temp->email << "\n";
+                        found = true;
+                    }
+                    temp = temp->next;
+                }
+                if (!found) cout << "No users without tasks found.\n";
+                break;
+            }
+
+            case 5: {
+                cout << "Returning to Admin Menu...\n";
+                break;
+            }
+
+            default:
+                cout << "Invalid choice! Please enter 1-5.\n";
+        }
+
+        if (choice != 5) {
+            cout << "\nPress Enter to continue...";
+            cin.get();
+        }
+
+    } while (choice != 5);
 }
+
 
 /**
  * Toggle user activation status between active and inactive

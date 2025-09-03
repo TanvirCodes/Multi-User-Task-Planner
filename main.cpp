@@ -51,7 +51,7 @@ void mainMenu(UserManager &um) {
                 break;
             }
 
-            case 3: {
+            case 4: {
                 cout << "Exiting program...\n";
                 break;
             }
