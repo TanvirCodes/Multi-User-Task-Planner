@@ -1460,7 +1460,7 @@ bool UserManager::isUserActiveById(int id) {
 	return (u && u->isActive);
 }
 
-// Save Data to File 
+// Save Data to File
 	void UserManager::saveToFile(const string& filename) {
 		ofstream file(filename);
 		if (!file.is_open()) {
@@ -1553,5 +1553,5 @@ bool UserManager::isUserActiveById(int id) {
 		}
 
 		file.close();
-		cout << "Data loaded from " << filename << " successfully.\n";
+		cout << "Data loaded from designated file successfully.\n" << endl;
 	}
