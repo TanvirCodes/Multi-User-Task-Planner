@@ -1751,110 +1751,113 @@ void UserManager::saveToFile(const string& filename)
             for (const auto& taskPair : user.tasks)
             {
                 const Task& task = taskPair.second;
-                // Task data - TASK <taskId> <title> <dueDate> <status>
                 string title_with_underscores = task.title;
                 replace(title_with_underscores.begin(), title_with_underscores.end(), ' ', '_');
-                file << "TASK " << task.taskId << " " << title_with_underscores << " " << task.dueDate << " " << task.status << "\n";
+                file << "TASK " << task.taskId << " "
+                << title_with_underscores << " "
+                << task.dueDate << " "
+                << task.status << "\n";
             }
         }
-
-        // Footer
-        file << "\n=====>>> Total Users: " << usersById.size() << "!\n";
-
-        file.close();
-        cout << "Data saved successfully to " << filename << endl;
     }
+
+    // Footer
+    file << "\n=====>>> Total Users: " << usersById.size() << "!\n";
+
+    file.close();
+    cout << "Data saved successfully to " << filename << endl;
 }
 
+
 // Load data from file
-    void UserManager::loadFromFile(const string& filename)
+void UserManager::loadFromFile(const string& filename)
+{
+    ifstream file(filename);
+
+    if (!file.is_open())
     {
-        ifstream file(filename);
+        cerr << "Error: Could not open data file " << filename << endl;
+        return;
+    }
 
-        if (!file.is_open())
+    // Skip the decorated header lines
+    string line;
+    while (getline(file, line) && line.find("*** Users Data ***") == string::npos)
+    {
+        // Skip until we find the header or end of file
+        if (file.eof()) break;
+    }
+
+    // Skip the column headers
+    getline(file, line);
+
+    User* currentUser = nullptr;
+
+    while (getline(file, line))
+    {
+        // Skip empty lines
+        if (line.empty())
         {
-            cerr << "Error: Could not open data file " << filename << endl;
-            return;
+            continue;
         }
 
-        // Skip the decorated header lines
-        string line;
-        while (getline(file, line) && line.find("*** Users Data ***") == string::npos)
+        stringstream ss(line);
+        string type;
+        ss >> type;
+
+        if (type == "User")
         {
-            // Skip until we find the header or end of file
-            if (file.eof()) break;
-        }
+            // The user's format is "User --> <id> ..."
+            string arrow;
+            int id;
+            string username, email, password, statusStr;
 
-        // Skip the column headers
-        getline(file, line);
+            ss >> arrow >> id >> username >> email >> password >> statusStr;
 
-        User* currentUser = nullptr;
-
-        while (getline(file, line))
-        {
-            // Skip empty lines
-            if (line.empty())
+            // Skip invalid entries - check for valid ID and non-empty username
+            if (id <= 0 || username.empty() || email.empty())
             {
+                currentUser = nullptr; // Reset currentUser to avoid adding tasks to invalid user
                 continue;
             }
 
-            stringstream ss(line);
-            string type;
-            ss >> type;
+            bool isActive = (statusStr == "Active");
 
-            if (type == "User")
+            // Only add user if all data is valid
+            User newUser(id, username, email, password, isActive);
+            usersById[id] = newUser;
+            usersByUsername[username] = id;
+            usersByEmail[email] = id;
+            usedUsernames.insert(username);
+            usedEmails.insert(email);
+            currentUser = &usersById[id];
+
+            // Update counters to ensure they're correct
+            if (id >= userIdCounter)
             {
-                // The user's format is "User --> <id> ..."
-                string arrow;
-                int id;
-                string username, email, password, statusStr;
-
-                ss >> arrow >> id >> username >> email >> password >> statusStr;
-
-                // Skip invalid entries - check for valid ID and non-empty username
-                if (id <= 0 || username.empty() || email.empty())
-                {
-                    currentUser = nullptr; // Reset currentUser to avoid adding tasks to invalid user
-                    continue;
-                }
-
-                bool isActive = (statusStr == "Active");
-
-                // Only add user if all data is valid
-                User newUser(id, username, email, password, isActive);
-                usersById[id] = newUser;
-                usersByUsername[username] = id;
-                usersByEmail[email] = id;
-                usedUsernames.insert(username);
-                usedEmails.insert(email);
-                currentUser = &usersById[id];
-
-                // Update counters to ensure they're correct
-                if (id >= userIdCounter)
-                {
-                    userIdCounter = id + 1;
-                }
-            }
-            else if (type == "TASK" && currentUser)
-            {
-                int taskId;
-                string title, dueDate, status;
-                ss >> taskId >> title >> dueDate >> status;
-
-                // Replace underscores back with spaces
-                replace(title.begin(), title.end(), '_', ' ');
-
-                Task newTask(taskId, title, dueDate, status);
-                currentUser->tasks[taskId] = newTask;
-            }
-            else if (line.find("Total Users:") != string::npos)
-            {
-                // End of data block
-                break;
+                userIdCounter = id + 1;
             }
         }
-        file.close();
-        updateStatistics();
-        cout << "Data loaded successfully." << endl;
+        else if (type == "TASK" && currentUser)
+        {
+            int taskId;
+            string title, dueDate, status;
+            ss >> taskId >> title >> dueDate >> status;
+
+            // Replace underscores back with spaces
+            replace(title.begin(), title.end(), '_', ' ');
+
+            Task newTask(taskId, title, dueDate, status);
+            currentUser->tasks[taskId] = newTask;
+        }
+        else if (line.find("Total Users:") != string::npos)
+        {
+            // End of data block
+            break;
+        }
     }
+    file.close();
+    updateStatistics();
+    cout << "Data loaded successfully." << endl;
+}
 

@@ -3,6 +3,17 @@
 
      User Id     User Name       Email           Password      Status
 
-User --> 101        tanvir        tanvir@gmail.com        1234        Inactive
+User --> 101        tanvir        tanvir@gmail.com        1234        Active
+TASK 1001 DLD231 09/10/2025 Ongoing
 
-=====>>> Total Users: 5!
+User --> 102        sadik        sadik@gmail.com        abcd        Active
+
+User --> 103        Himel        Himel@gmail.com        abcd        Active
+
+User --> 104        Anam        Anamul@gmail.com        ab1234        Active
+
+User --> 105        Tayeen        tayeen@gmail.com        ab234        Active
+
+User --> 106        Sanin        sanin@gmail.com        1234        Active
+
+=====>>> Total Users: 6!
