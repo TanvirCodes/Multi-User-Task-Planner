@@ -1754,9 +1754,9 @@ void UserManager::saveToFile(const string& filename)
                 string title_with_underscores = task.title;
                 replace(title_with_underscores.begin(), title_with_underscores.end(), ' ', '_');
                 file << "TASK " << task.taskId << " "
-                << title_with_underscores << " "
-                << task.dueDate << " "
-                << task.status << "\n";
+                     << title_with_underscores << " "
+                     << task.dueDate << " "
+                     << task.status << "\n";
             }
         }
     }
@@ -1832,7 +1832,7 @@ void UserManager::loadFromFile(const string& filename)
             usedEmails.insert(email);
             currentUser = &usersById[id];
 
-            // Update counters to ensure they're correct
+            // Update user counter to ensure they're correct
             if (id >= userIdCounter)
             {
                 userIdCounter = id + 1;
@@ -1857,6 +1857,30 @@ void UserManager::loadFromFile(const string& filename)
         }
     }
     file.close();
+
+    // Update task counter to ensure no conflicts with existing tasks
+    for (const auto& userPair : usersById)
+    {
+        for (const auto& taskPair : userPair.second.tasks)
+        {
+            if (taskPair.first >= taskIdCounter)
+            {
+                taskIdCounter = taskPair.first + 1;
+            }
+        }
+    }
+
+    // Update task counter after all tasks are loaded
+    for (const auto& userPair : usersById)
+    {
+        for (const auto& taskPair : userPair.second.tasks)
+        {
+            if (taskPair.second.taskId >= taskIdCounter)
+            {
+                taskIdCounter = taskPair.second.taskId + 1;
+            }
+        }
+    }
     updateStatistics();
     cout << "Data loaded successfully." << endl;
 }
