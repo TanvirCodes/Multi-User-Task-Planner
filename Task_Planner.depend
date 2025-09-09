@@ -40,18 +40,23 @@
 	<limits>
 	"userManager.h"
 
-1757381176 source:c:\users\hp\desktop\shakib\multi-user-task-planner\main.cpp
+1757412061 source:c:\users\hp\desktop\shakib\multi-user-task-planner\main.cpp
 	<iostream>
 	<limits>
 	"usermanager.h"
 
-1757371366 c:\users\hp\desktop\shakib\multi-user-task-planner\usermanager.h
+1757394349 c:\users\hp\desktop\shakib\multi-user-task-planner\usermanager.h
 	<iostream>
+	<unordered_map>
+	<unordered_set>
+	<vector>
+	<string>
 
-1757371296 source:c:\users\hp\desktop\shakib\multi-user-task-planner\usermanager.cpp
+1757412979 source:c:\users\hp\desktop\shakib\multi-user-task-planner\usermanager.cpp
 	<iomanip>
 	<limits>
 	<fstream>
 	<sstream>
+	<algorithm>
 	"usermanager.h"
 

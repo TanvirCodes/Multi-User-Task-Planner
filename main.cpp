@@ -48,6 +48,7 @@ void mainMenu(UserManager &um) {
             }
 
             case 4: {
+                um.saveToFile("C:\\Users\\HP\\Desktop\\Shakib\\Multi-User-Task-Planner\\data.txt");
                 cout << "Exiting program.........." << endl;
                 break;
             }
@@ -71,7 +72,5 @@ int main() {
     UserManager userManager; // Initialize UserManager object
     userManager.loadFromFile("C:\\Users\\HP\\Desktop\\Shakib\\Multi-User-Task-Planner\\data.txt"); // Load data at start
     mainMenu(userManager); // Start the main application interface
-    userManager.saveToFile("C:\\Users\\HP\\Desktop\\Shakib\\Multi-User-Task-Planner\\data.txt"); // Save data before exit
-
     return 0;
 }

@@ -1,13 +1,8 @@
-107 1001
-USER 101 tanvir tanvir@gmail.com 1234 1
-ENDUSER
-USER 102 sadik sadik@gmail.com abcd 1
-ENDUSER
-USER 103 Himel Himel@gmail.com abcd 1
-ENDUSER
-USER 104 Anam Anamul@gmail.com ab1234 1
-ENDUSER
-USER 105 Tayeen tayeen@gmail.com ab234 1
-ENDUSER
-USER 106 shakib sha@gmail.com shakib12345 1
-ENDUSER
+
+		*** Users Data ***
+
+     User Id     User Name       Email           Password      Status
+
+User --> 101        tanvir        tanvir@gmail.com        1234        Inactive
+
+=====>>> Total Users: 5!
