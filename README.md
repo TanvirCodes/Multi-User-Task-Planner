@@ -86,7 +86,7 @@ g++ -std=c++17 -o task_planner main.cpp usermanager.cpp
 -> Data integrity validation
 -> Concurrent user session support
 
-### 🎓 Academic & Professional Value ###
+# 🎓 Academic & Professional Value ###
 
 # Data Structures & Algorithms Demonstrated
 --> Hash Tables: Advanced implementation with collision handling
@@ -100,7 +100,7 @@ g++ -std=c++17 -o task_planner main.cpp usermanager.cpp
 --> Code Maintainability: Self-documenting code structure
 --> Performance Analysis: Big O complexity understanding
 
-## 🚀 Future Enhancements
+# 🚀 Future Enhancements
 --> GUI Implementation: Qt or web-based interface
 --> Database Integration: PostgreSQL/MySQL support
 --> REST API: RESTful web service endpoints
