@@ -4,7 +4,7 @@ A high-performance console-based task management system built in C++ that suppor
 
 # 🚀 Features
 
-Core Functionality
+# Core Functionality
 --> Multi-User Authentication System: Secure user registration, login, and session management
 --> Real-Time Task Management: Create, edit, delete, and track task completion status
 --> Administrative Dashboard: Comprehensive system statistics and user management tools
